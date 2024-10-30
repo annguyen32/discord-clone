@@ -1,11 +1,14 @@
 "use client";
-import { useMutation, useQuery } from "convex/react";
+
 import { useState } from "react";
 import { api } from "../../convex/_generated/api";
-interface Message {
-  sender: string;
-  content: string;
-}
+import {
+  Authenticated,
+  Unauthenticated,
+  useMutation,
+  useQuery,
+} from "convex/react";
+import { SignInButton } from "@clerk/nextjs";
 
 export default function Home() {
   const messages = useQuery(api.functions.message.list);
@@ -17,22 +20,29 @@ export default function Home() {
     setInput("");
   };
   return (
-    <div>
-      {messages?.map((messages, index) => (
-        <div key={index}>
-          <strong>{messages.sender}</strong> : {messages.content}
+    <>
+      <Authenticated>
+        <div>
+          {messages?.map((messages, index) => (
+            <div key={index}>
+              <strong>{messages.sender}</strong> : {messages.content}
+            </div>
+          ))}
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="messgage"
+              id="message"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <button type="submit"> Send </button>
+          </form>
         </div>
-      ))}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="messgage"
-          id="message"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <button type="submit"> Send </button>
-      </form>
-    </div>
+      </Authenticated>
+      <Unauthenticated>
+        <SignInButton />
+      </Unauthenticated>
+    </>
   );
 }
