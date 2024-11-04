@@ -1,6 +1,8 @@
 import { HttpRouter, httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { Webhook } from "svix";
+import { internal } from "./_generated/api";
+import { WebhookEvent } from "@clerk/nextjs/server";
 
 const http = httpRouter();
 http.route({
@@ -13,15 +15,32 @@ http.route({
     }
     switch (body.type) {
       case "user.created":
+        await ctx.runMutation(internal.functions.user.upsert, {
+          username: body.data.username!,
+          image: body.data.image_url,
+          clerId: body.data.clerkId,
+        });
+
         break;
       case "user.updated":
+        await ctx.runMutation(internal.functions.user.upsert, {
+          username: body.data.username!,
+          image: body.data.image_url,
+          clerId: body.data.clerkId,
+        });
         break;
       case "user.deleted":
+        if (body.data.id) {
+          await ctx.runMutation(internal.functions.user.remove, {
+            clerkId: body.data.id,
+          });
+        }
         break;
     }
     return new Response("OK", { status: 200 });
   }),
 });
+
 const validateRequest = async (req: Request) => {
   const svix_id = req.headers.get("svix-id");
   const svix_timestamp = req.headers.get("svix-timestamp");
@@ -31,10 +50,10 @@ const validateRequest = async (req: Request) => {
   try {
     const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
     return webhook.verify(text, {
-      id: "svix-id",
-      timespamp: "svix-timestamp",
-      signature: "svix-signature",
-    });
+      "svix-id": svix_id!,
+      "svix-timestamp": svix_timestamp!,
+      "svix-signature": svix_signature!,
+    }) as unknown as WebhookEvent;
   } catch (error) {
     return null;
   }

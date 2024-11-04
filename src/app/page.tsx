@@ -20,29 +20,22 @@ export default function Home() {
     setInput("");
   };
   return (
-    <>
-      <Authenticated>
-        <div>
-          {messages?.map((messages, index) => (
-            <div key={index}>
-              <strong>{messages.sender}</strong> : {messages.content}
-            </div>
-          ))}
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="messgage"
-              id="message"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-            />
-            <button type="submit"> Send </button>
-          </form>
+    <div>
+      {messages?.map((messages, index) => (
+        <div key={index}>
+          <strong>{messages.sender}</strong> : {messages.content}
         </div>
-      </Authenticated>
-      <Unauthenticated>
-        <SignInButton />
-      </Unauthenticated>
-    </>
+      ))}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="messgage"
+          id="message"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <button type="submit"> Send </button>
+      </form>
+    </div>
   );
 }
